@@ -1,5 +1,7 @@
-from sqlmodel import Field, Relationship, SQLModel
+import datetime
+import enum
 
+from sqlmodel import Field, Relationship, SQLModel
 
 # Shared properties
 # TODO replace email str with EmailStr when sqlmodel supports it
@@ -119,15 +121,16 @@ class NewPassword(SQLModel):
 
 class AccountBase(SQLModel):
     broker: str
-    buying_power: float
-    cash: float
-    currency: str
-    daytrade_count: int
-    equity:float
+    buying_power: float = 0
+    cash: float = 0
+    currency: str = "USD"
+    daytrade_count: int = 0
+    equity:float = 0
 
 class Account(AccountBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
-
+    portfolios: list["Porfolio"] = Relationship(back_populates="account")
+    orders: list["Order"] = Relationship(back_populates="account")
 
 # Properties to receive on account creation
 class AccountCreate(AccountBase):
@@ -136,6 +139,178 @@ class AccountCreate(AccountBase):
 # Properties to receive on account update
 class AccountUpdate(AccountBase):
     pass
+
+# Properties to return via API, id is always required
+class AccountPublic(AccountBase):
+    id: int
+
+
+class AccountsPublic(SQLModel):
+    data: list[AccountPublic]
+    count: int
+
+
+##########################################################################
+## Company
+##########################################################################
+
+class CompanyBase(SQLModel):
+    name: str
+    sector: str | None = None
+    subsector: str | None = None
+    market_cap: float = 0
+
+class Company(CompanyBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    instruments: list["Instrument"] = Relationship(back_populates="instrument")
+
+class CompanyCreate(CompanyBase):
+    pass
+
+class CompanyUpdate(CompanyBase):
+    pass
+
+class CompanyPublic(CompanyBase):
+    id: int
+
+class CompaniesPublic(SQLModel):
+    data: list[CompanyPublic]
+    count: int
+
+
+##########################################################################
+## FinancialStatement
+##########################################################################
+
+class FSType(enum.Enum):
+    BALANCE_SHEET = "balancesheet"
+    INCOME = "income"
+    CASHFLOW = "cashflow"
+
+class FinanicalStatementBase(SQLModel):
+    st_type: FSType
+    qtr: int
+    year: int
+
+class FinanicalStatement(FinanicalStatementBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+    company_id: int | None = Field(default=None, foreign_key="company.id", nullable=False)
+    company: Company | None = Relationship(back_populates="companies")
+
+    items: list["FinancialStatementLineItemBase"] = Relationship(back_populates="financial_statement")
+
+class FinancialStatementCreate(FinanicalStatementBase):
+    pass
+
+class FinancialStatementPublic(CompanyBase):
+    id: int
+
+class FinancialStatementsPublic(SQLModel):
+    data: list[FinancialStatementPublic]
+    count: int
+
+##########################################################################
+## FinancialStatementLineItem
+##########################################################################
+
+class FinancialStatementLineItemBase(SQLModel):
+    name: str
+    amount: float
+
+class FinancialStatementLineItem(FinancialStatementLineItemBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+    financial_statement_id: int | None = Field(default=None, foreign_key="financialstatement.id", nullable=False)
+    financial_statement: FinanicalStatement | None = Relationship(back_populates="financial_statements")
+
+
+class FinancialStatementLineItemCreate(FinanicalStatementBase):
+    pass
+
+##########################################################################
+## Instrument
+##########################################################################
+
+class AssetType(enum.Enum):
+    STOCK = "stock"
+    OPTION = "option"
+    FOREX = "forex"
+    FUTURE = "future"
+    ETF = "etf"
+
+
+class InstrumentBase(SQLModel):
+    symbol: str
+    asset_type: AssetType
+    currency: str = "USD"
+    exchange: str | None
+    root: str | None
+    underlying: str | None
+    avg_daily_volume: float | None = None
+    one_year_return: float | None = None
+    one_month_return: float | None = None
+    one_week_return: float | None = None
+    one_day_return: float | None = None
+    metric_52_high: float | None = None
+    metric_52_low: float | None = None
+
+class Instrument(InstrumentBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+    company_id: int | None = Field(default=None, foreign_key="company.id", nullable=False)
+    company: Company | None = Relationship(back_populates="companies")
+
+    charts: list["Chart"] = Relationship(back_populates="instrument")
+
+
+class InstrumentCreate(InstrumentBase):
+    pass
+
+class InstrumentPublic(InstrumentBase):
+    id: int
+
+class InstrumentsPublic(SQLModel):
+    data: list[InstrumentPublic]
+    count: int
+
+
+
+##########################################################################
+## Chart
+##########################################################################
+class ChartInterval(enum.Enum):
+    Min_5   = "5min"
+    Min_15  = "15min"
+    Min_30  = "30min"
+    Hourly  = "hourly"
+    Daily   = "daily"
+    Monthly = "monthly"
+
+class ChartBase(SQLModel):
+    interval: ChartInterval
+    timestamp: datetime
+
+class Chart(ChartBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    instrument_id: int | None = Field(default=None, foreign_key="instrument.id", nullable=False)
+    instrument: Instrument | None = Relationship(back_populates="instruments")
+
+    bars: list["Bar"] = Relationship(back_populates="chart")
+
+class ChartCreate(ChartBase):
+    pass
+
+class ChartUpdate(ChartBase):
+    pass
+
+class ChartPublic(ChartBase):
+    id: int
+
+class ChartsPublic(SQLModel):
+    data: list[ChartPublic]
+    count: int
+
 
 
 ##########################################################################
@@ -168,125 +343,41 @@ class Bar(BarBase, table=True):
 class BarCreate(BarBase):
     pass
 
-##########################################################################
-## Chart
-##########################################################################
-class ChartInterface(enum.Enum):
-    Min_5   = "5min"
-    Min_15  = "15min"
-    Min_30  = "30min"
-    Hourly  = "hourly"
-    Daily   = "daily"
-    Monthly = "monthly"
-
-class ChartBase(SQLModel):
-    interval: ChartInterval
-    timestamp: datetime
-
-class Chart(ChartBase, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    instrument_id: int | None = Field(default=None, foreign_key="instrument.id", nullable=False)
-    instrument: Instrument | None = Relationship(back_populates="instruments")
-
-class ChartCreate(ChartBase):
-    pass
-
 
 ##########################################################################
-## Company
+## Portfolio
 ##########################################################################
 
-class CompanyBase(SQLModel):
-    name: str
-    sector: str | None
-    subsector: str | None
-    market_cap: float
+class PortfolioBase(SQLModel):
+    cash: float
+    equity: float
+    profit: float
 
-class Company(CompanyBase, table=True):
+class Porfolio(PortfolioBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
-class CompanyCreate(CompanyBase):
+    account_id: int | None = Field(default=None, foreign_key="account.id")
+    account: Account | None = Relationship(back_populates="accounts")
+
+    positions: list["Position"] = Relationship(back_populates="portfolio")
+    orders: list["Order"] = Relationship(back_populates="order")
+
+
+
+class PortfolioCreate(PortfolioBase):
     pass
 
-
-##########################################################################
-## FinancialStatement
-##########################################################################
-
-class FSType(enum.Enum):
-    BALANCE_SHEET = "balancesheet"
-    INCOME = "income"
-    CASHFLOW = "cashflow"
-
-class FinanicalStatementBase(SQLModel):
-    st_type: FSType
-    qtr: int
-    year: int
-
-class FinanicalStatement(FinanicalStatementBase, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-
-    company_id: int | None = Field(default=None, foreign_key="company.id", nullable=False)
-    company: Company | None = Relationship(back_populates="companies")
-
-class FinanicalStatementCreate(FinanicalStatementBase):
+class PortfolioUpdate(PortfolioBase):
     pass
 
+class PortfolioPublic(PortfolioBase):
+    id: int
 
-##########################################################################
-## FinancialStatementLineItem
-##########################################################################
-
-class FinanicalStatementLineItemBase(SQLModel):
-    name: str
-    amount: float
-
-class FinanicalStatementLineItem(FinanicalStatementLineItemBase,table=True):
-    id: int | None = Field(default=None, primary_key=True)
-
-    financial_statement_id: int | None = Field(default=None, foreign_key="financialstatement.id", nullable=False)
-    financial_statement: FinanicalStatement | None = Relationship(back_populates="financial_statements")
+class PortfoliosPublic(SQLModel):
+    data: list[PortfolioPublic]
+    count: int
 
 
-class FinanicalStatementLineItemCreate(FinanicalStatementBase):
-    pass
-
-##########################################################################
-## Instrument
-##########################################################################
-
-class AssetType(enum.Enum):
-    STOCK = "stock"
-    OPTION = "option"
-    FOREX = "forex"
-    FUTURE = "future"
-    ETF = "etf"
-
-
-class InstrumentBase(SQLModel):
-    symbol: str
-    asset_type: AssetType
-    currency: str
-    exchange: str | None
-    root: str | None
-    underlying: str | None
-    avg_daily_volume: float | None
-    one_year_return: float | None
-    one_month_return: float | None
-    one_week_return: float | None
-    one_day_return: float | None
-    metric_52_high: float | None
-    metric_52_low: float | None
-
-class Instrument(InstrumentBase, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-
-    company_id: int | None = Field(default=None, foreign_key="company.id", nullable=False)
-    company: Company | None = Relationship(back_populates="companies")
-
-
-class InstrumentCreate(InstrumentBase):
-    pass
 
 ##########################################################################
 ## Order
@@ -315,7 +406,7 @@ class OrderBase(SQLModel):
     price: float
     unit: QtyUnits
     time_in_force: TimeInForce
-    status: str
+    status: str | None
 
 class Order(OrderBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -326,10 +417,21 @@ class Order(OrderBase, table=True):
     instrument_id: int | None = Field(default=None, foreign_key="instrument.id")
     instrument: Instrument | None = Relationship(back_populates="instruments")
 
+    legs: list["OrderLeg"] = Relationship(back_populates="order")
+
 class OrderCreate(OrderBase):
     pass
 class OrderUpdate(OrderBase):
     pass
+
+class OrderPublic(OrderBase):
+    id: int
+
+class OrdersPublic(SQLModel):
+    data: list[OrderPublic]
+    count: int
+
+
 
 ##########################################################################
 ## Order Leg
@@ -342,7 +444,7 @@ class OrderLegBase(SQLModel):
     price: float
     status: str
 
-class OrderLeg(OrderLegBase, table=True)
+class OrderLeg(OrderLegBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     parent_id: int | None = Field(default=None, foreign_key="order.id")
     parent: Order | None = Relationship(back_populates="orders")
@@ -351,27 +453,6 @@ class OrderLegCreate(OrderBase):
     pass
 
 class OrderLegUpdate(OrderBase):
-    pass
-
-##########################################################################
-## Portfolio
-##########################################################################
-
-class PortfolioBase(SQLModel):
-    cash: float
-    equity: float
-    profit: float
-
-class Porfolio(PortfolioBase, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-
-    account_id: int | None = Field(default=None, foreign_key="account.id")
-    account: Account | None = Relationship(back_populates="accounts")
-
-class PortfolioCreate(OrderBase):
-    pass
-
-class PortfolioUpdate(OrderBase):
     pass
 
 
@@ -385,10 +466,8 @@ class PositionDirection(enum.Enum):
 class PositionBase(SQLModel):
     long_short : PositionDirection
     qty: float
-    root: str
-    underlying: str
-    cost: float
-    market_value: float
+    cost: float | None
+    market_value: float | None
 
 class Position(PositionBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -399,18 +478,28 @@ class Position(PositionBase, table=True):
     instrument_id: int | None = Field(default=None, foreign_key="instrument.id")
     instrument: Instrument | None = Relationship(back_populates="instruments")
 
+    orders: list["Order"] = Relationship(back_populates="position")
+
 class PositionCreate(OrderBase):
     pass
 
 class PositionUpdate(OrderBase):
     pass
 
+class PositionPublic(OrderBase):
+    id: int
+
+class PositionsPublic(SQLModel):
+    data: list[PositionPublic]
+    count: int
+
+
 ##########################################################################
 ## Trade
 ##########################################################################
 
 
-class Trade(SQLModel):
+class TradeBase(SQLModel):
     qty: float
     entry_price: float
     exit_price: float
@@ -424,26 +513,28 @@ class Trade(TradeBase, table=True):
     instrument_id: int | None = Field(default=None, foreign_key="instrument.id")
     instrument: Instrument | None = Relationship(back_populates="instruments")
 
-    entry_signal_bar_id: | None = Field(default=None, foreign_key="bar.id")
+    entry_signal_bar_id: int | None = Field(default=None, foreign_key="bar.id")
     entry_signal_bar: Bar | None = Relationship(back_populates="bars")
 
-    entry_action_bar_id: | None = Field(default=None, foreign_key="bar.id")
+    entry_action_bar_id: int | None = Field(default=None, foreign_key="bar.id")
     entry_action_bar: Bar | None = Relationship(back_populates="bars")
 
-    entry_order_id: | None = Field(default=None, foreign_key="order.id")
+    entry_order_id: int | None = Field(default=None, foreign_key="order.id")
     entry_order_bar: Bar | None = Relationship(back_populates="orders")
 
-    exist_signal_bar_id: | None = Field(default=None, foreign_key="bar.id")
+    exist_signal_bar_id: int | None = Field(default=None, foreign_key="bar.id")
     exit_signal_bar: Bar | None = Relationship(back_populates="bars")
 
-    exit_action_bar_id: | None = Field(default=None, foreign_key="bar.id")
+    exit_action_bar_id: int | None = Field(default=None, foreign_key="bar.id")
     exit_action_bar: Bar | None = Relationship(back_populates="bars")
 
-    exit_order_id: | None = Field(default=None, foreign_key="order.id")
+    exit_order_id: int | None = Field(default=None, foreign_key="order.id")
     exit_order_bar: Bar | None = Relationship(back_populates="orders")
 
-    position_id: | None = Field(default=None, foreign_key="position.id")
+    position_id: int | None = Field(default=None, foreign_key="position.id")
     position: Position | None = Relationship(back_populates="positions")
+
+
 
 
 
@@ -452,3 +543,10 @@ class TradeCreate(OrderBase):
 
 class TradeUpdate(OrderBase):
     pass
+
+class TradePublic(TradeBase):
+    id: int
+
+class TradesPublic(SQLModel):
+    data: list[TradePublic]
+    count: int
