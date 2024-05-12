@@ -4,91 +4,99 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Message
+from app.models import Account, AccountCreate, AccountPublic, AccountsPublic, AccountUpdate, Message
 
 router = APIRouter()
 
 
 @router.get("/", response_model=AccountsPublic)
 def read_accounts(
-    session: SessionDep,  skip: int = 0, limit: int = 100
+    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
     """
-    Retrieve items.
+    Retrieve accounts.
     """
-    count_statement = (
-          select(func.count())
-         .select_from(Item)
-         .where(Item.owner_id == current_user.id)
-    )
-    count = session.exec(count_statement).one()
-    statement = (
+
+    if current_user.is_superuser:
+        count_statement = select(func.count()).select_from(Account)
+        count = session.exec(count_statement).one()
+        statement = select(Account).offset(skip).limit(limit)
+        accounts = session.exec(statement).all()
+    else:
+        count_statement = (
+            select(func.count())
+            .select_from(Account)
+            .where(Account.owner_id == current_user.id)
+        )
+        count = session.exec(count_statement).one()
+        statement = (
             select(Account)
+            .where(Account.owner_id == current_user.id)
             .offset(skip)
             .limit(limit)
-    )
-    accounts = session.exec(statement).all()
+        )
+        accounts = session.exec(statement).all()
 
     return AccountsPublic(data=accounts, count=count)
 
 
-@router.get("/{id}", response_model=ItemPublic)
-def read_item(session: SessionDep, current_user: CurrentUser, id: int) -> Any:
+@router.get("/{id}", response_model=AccountPublic)
+def read_account(session: SessionDep, current_user: CurrentUser, id: int) -> Any:
     """
-    Get item by ID.
+    Get account by ID.
     """
-    item = session.get(Item, id)
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    if not current_user.is_superuser and (item.owner_id != current_user.id):
+    account = session.get(Account, id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    if not current_user.is_superuser and (account.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    return item
+    return account
 
 
-@router.post("/", response_model=ItemPublic)
-def create_item(
-    *, session: SessionDep, current_user: CurrentUser, item_in: ItemCreate
+@router.post("/", response_model=AccountPublic)
+def create_account(
+    *, session: SessionDep, current_user: CurrentUser, account_in: AccountCreate
 ) -> Any:
     """
-    Create new item.
+    Create new account.
     """
-    item = Item.model_validate(item_in, update={"owner_id": current_user.id})
-    session.add(item)
+    account = Account.model_validate(account_in, update={"owner_id": current_user.id})
+    session.add(account)
     session.commit()
-    session.refresh(item)
-    return item
+    session.refresh(account)
+    return account
 
 
-@router.put("/{id}", response_model=ItemPublic)
-def update_item(
-    *, session: SessionDep, current_user: CurrentUser, id: int, item_in: ItemUpdate
+@router.put("/{id}", response_model=AccountPublic)
+def update_account(
+    *, session: SessionDep, current_user: CurrentUser, id: int, account_in: AccountUpdate
 ) -> Any:
     """
-    Update an item.
+    Update an account.
     """
-    item = session.get(Item, id)
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    if not current_user.is_superuser and (item.owner_id != current_user.id):
+    account = session.get(Account, id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    if not current_user.is_superuser and (account.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    update_dict = item_in.model_dump(exclude_unset=True)
-    item.sqlmodel_update(update_dict)
-    session.add(item)
+    update_dict = account_in.model_dump(exclude_unset=True)
+    account.sqlmodel_update(update_dict)
+    session.add(account)
     session.commit()
-    session.refresh(item)
-    return item
+    session.refresh(account)
+    return account
 
 
 @router.delete("/{id}")
-def delete_item(session: SessionDep, current_user: CurrentUser, id: int) -> Message:
+def delete_account(session: SessionDep, current_user: CurrentUser, id: int) -> Message:
     """
-    Delete an item.
+    Delete an account.
     """
-    item = session.get(Item, id)
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    if not current_user.is_superuser and (item.owner_id != current_user.id):
+    account = session.get(Account, id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    if not current_user.is_superuser and (account.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    session.delete(item)
+    session.delete(account)
     session.commit()
-    return Message(message="Item deleted successfully")
+    return Message(message="Account deleted successfully")

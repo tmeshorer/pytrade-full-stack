@@ -129,7 +129,7 @@ class AccountBase(SQLModel):
 
 class Account(AccountBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    portfolios: list["Porfolio"] = Relationship(back_populates="account")
+    portfolios: list["Portfolio"] = Relationship(back_populates="account")
     orders: list["Order"] = Relationship(back_populates="account")
 
 # Properties to receive on account creation
@@ -267,6 +267,9 @@ class Instrument(InstrumentBase, table=True):
 class InstrumentCreate(InstrumentBase):
     pass
 
+class InstrumentUpdate(InstrumentBase):
+    pass
+
 class InstrumentPublic(InstrumentBase):
     id: int
 
@@ -353,7 +356,7 @@ class PortfolioBase(SQLModel):
     equity: float
     profit: float
 
-class Porfolio(PortfolioBase, table=True):
+class Portfolio(PortfolioBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
     account_id: int | None = Field(default=None, foreign_key="account.id")
@@ -412,7 +415,7 @@ class Order(OrderBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
     portfolio_id: int | None = Field(default=None, foreign_key="portfolio.id")
-    porfolio: Porfolio | None = Relationship(back_populates="porfolios")
+    porfolio: Portfolio | None = Relationship(back_populates="porfolios")
 
     instrument_id: int | None = Field(default=None, foreign_key="instrument.id")
     instrument: Instrument | None = Relationship(back_populates="instruments")
@@ -473,7 +476,7 @@ class Position(PositionBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
     portfolio_id : int | None = Field(default=None, foreign_key="portfolio.id")
-    portfolio: Porfolio | None = Relationship(back_populates="portfolios")
+    portfolio: Portfolio | None = Relationship(back_populates="portfolios")
 
     instrument_id: int | None = Field(default=None, foreign_key="instrument.id")
     instrument: Instrument | None = Relationship(back_populates="instruments")
@@ -508,7 +511,7 @@ class Trade(TradeBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
     portfolio_id: int | None = Field(default=None, foreign_key="portfolio.id")
-    portfolio: Porfolio | None = Relationship(back_populates="portfolios")
+    portfolio: Portfolio | None = Relationship(back_populates="portfolios")
 
     instrument_id: int | None = Field(default=None, foreign_key="instrument.id")
     instrument: Instrument | None = Relationship(back_populates="instruments")
