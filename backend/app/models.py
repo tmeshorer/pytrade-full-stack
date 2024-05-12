@@ -165,7 +165,8 @@ class Bar(BarBase, table=True):
     chart_id: int | None = Field(default=None, foreign_key="chart.id", nullable=False)
     chart: Chart | None = Relationship(back_populates="charts")
 
-
+class BarCreate(BarBase):
+    pass
 
 ##########################################################################
 ## Chart
@@ -187,6 +188,9 @@ class Chart(ChartBase, table=True):
     instrument_id: int | None = Field(default=None, foreign_key="instrument.id", nullable=False)
     instrument: Instrument | None = Relationship(back_populates="instruments")
 
+class ChartCreate(ChartBase):
+    pass
+
 
 ##########################################################################
 ## Company
@@ -200,6 +204,9 @@ class CompanyBase(SQLModel):
 
 class Company(CompanyBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
+
+class CompanyCreate(CompanyBase):
+    pass
 
 
 ##########################################################################
@@ -222,6 +229,9 @@ class FinanicalStatement(FinanicalStatementBase, table=True):
     company_id: int | None = Field(default=None, foreign_key="company.id", nullable=False)
     company: Company | None = Relationship(back_populates="companies")
 
+class FinanicalStatementCreate(FinanicalStatementBase):
+    pass
+
 
 ##########################################################################
 ## FinancialStatementLineItem
@@ -238,6 +248,8 @@ class FinanicalStatementLineItem(FinanicalStatementLineItemBase,table=True):
     financial_statement: FinanicalStatement | None = Relationship(back_populates="financial_statements")
 
 
+class FinanicalStatementLineItemCreate(FinanicalStatementBase):
+    pass
 
 ##########################################################################
 ## Instrument
@@ -273,6 +285,8 @@ class Instrument(InstrumentBase, table=True):
     company: Company | None = Relationship(back_populates="companies")
 
 
+class InstrumentCreate(InstrumentBase):
+    pass
 
 ##########################################################################
 ## Order
@@ -312,6 +326,11 @@ class Order(OrderBase, table=True):
     instrument_id: int | None = Field(default=None, foreign_key="instrument.id")
     instrument: Instrument | None = Relationship(back_populates="instruments")
 
+class OrderCreate(OrderBase):
+    pass
+class OrderUpdate(OrderBase):
+    pass
+
 ##########################################################################
 ## Order Leg
 ##########################################################################
@@ -328,6 +347,12 @@ class OrderLeg(OrderLegBase, table=True)
     parent_id: int | None = Field(default=None, foreign_key="order.id")
     parent: Order | None = Relationship(back_populates="orders")
 
+class OrderLegCreate(OrderBase):
+    pass
+
+class OrderLegUpdate(OrderBase):
+    pass
+
 ##########################################################################
 ## Portfolio
 ##########################################################################
@@ -342,6 +367,12 @@ class Porfolio(PortfolioBase, table=True):
 
     account_id: int | None = Field(default=None, foreign_key="account.id")
     account: Account | None = Relationship(back_populates="accounts")
+
+class PortfolioCreate(OrderBase):
+    pass
+
+class PortfolioUpdate(OrderBase):
+    pass
 
 
 ##########################################################################
@@ -367,6 +398,17 @@ class Position(PositionBase, table=True):
 
     instrument_id: int | None = Field(default=None, foreign_key="instrument.id")
     instrument: Instrument | None = Relationship(back_populates="instruments")
+
+class PositionCreate(OrderBase):
+    pass
+
+class PositionUpdate(OrderBase):
+    pass
+
+##########################################################################
+## Trade
+##########################################################################
+
 
 class Trade(SQLModel):
     qty: float
@@ -405,3 +447,8 @@ class Trade(TradeBase, table=True):
 
 
 
+class TradeCreate(OrderBase):
+    pass
+
+class TradeUpdate(OrderBase):
+    pass
