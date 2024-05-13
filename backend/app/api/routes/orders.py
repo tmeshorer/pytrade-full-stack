@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.get("/", response_model=OrdersPublic)
 def read_orders(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
+        session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
     """
     Retrieve orders.
@@ -55,7 +55,7 @@ def read_order(session: SessionDep, current_user: CurrentUser, id: int) -> Any:
 
 @router.post("/", response_model=OrderPublic)
 def create_order(
-    *, session: SessionDep, current_user: CurrentUser, order_in: OrderCreate
+        *, session: SessionDep, current_user: CurrentUser, order_in: OrderCreate
 ) -> Any:
     """
     Create new order.
@@ -69,7 +69,7 @@ def create_order(
 
 @router.put("/{id}", response_model=OrderPublic)
 def update_order(
-    *, session: SessionDep, current_user: CurrentUser, id: int, order_in: OrderUpdate
+        *, session: SessionDep, current_user: CurrentUser, id: int, order_in: OrderUpdate
 ) -> Any:
     """
     Update an order.

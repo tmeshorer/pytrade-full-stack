@@ -3,6 +3,7 @@ import enum
 
 from sqlmodel import Field, Relationship, SQLModel
 
+
 # Shared properties
 # TODO replace email str with EmailStr when sqlmodel supports it
 class UserBase(SQLModel):
@@ -125,20 +126,24 @@ class AccountBase(SQLModel):
     cash: float = 0
     currency: str = "USD"
     daytrade_count: int = 0
-    equity:float = 0
+    equity: float = 0
+
 
 class Account(AccountBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     portfolios: list["Portfolio"] = Relationship(back_populates="account")
     orders: list["Order"] = Relationship(back_populates="account")
 
+
 # Properties to receive on account creation
 class AccountCreate(AccountBase):
     pass
 
+
 # Properties to receive on account update
 class AccountUpdate(AccountBase):
     pass
+
 
 # Properties to return via API, id is always required
 class AccountPublic(AccountBase):
@@ -160,18 +165,23 @@ class CompanyBase(SQLModel):
     subsector: str | None = None
     market_cap: float = 0
 
+
 class Company(CompanyBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     instruments: list["Instrument"] = Relationship(back_populates="instrument")
 
+
 class CompanyCreate(CompanyBase):
     pass
+
 
 class CompanyUpdate(CompanyBase):
     pass
 
+
 class CompanyPublic(CompanyBase):
     id: int
+
 
 class CompaniesPublic(SQLModel):
     data: list[CompanyPublic]
@@ -187,10 +197,12 @@ class FSType(enum.Enum):
     INCOME = "income"
     CASHFLOW = "cashflow"
 
+
 class FinanicalStatementBase(SQLModel):
     st_type: FSType
     qtr: int
     year: int
+
 
 class FinanicalStatement(FinanicalStatementBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -200,15 +212,19 @@ class FinanicalStatement(FinanicalStatementBase, table=True):
 
     items: list["FinancialStatementLineItemBase"] = Relationship(back_populates="financial_statement")
 
+
 class FinancialStatementCreate(FinanicalStatementBase):
     pass
+
 
 class FinancialStatementPublic(CompanyBase):
     id: int
 
+
 class FinancialStatementsPublic(SQLModel):
     data: list[FinancialStatementPublic]
     count: int
+
 
 ##########################################################################
 ## FinancialStatementLineItem
@@ -217,6 +233,7 @@ class FinancialStatementsPublic(SQLModel):
 class FinancialStatementLineItemBase(SQLModel):
     name: str
     amount: float
+
 
 class FinancialStatementLineItem(FinancialStatementLineItemBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -228,15 +245,23 @@ class FinancialStatementLineItem(FinancialStatementLineItemBase, table=True):
 class FinancialStatementLineItemCreate(FinanicalStatementBase):
     pass
 
+
 ##########################################################################
 ## Instrument
 ##########################################################################
 
 class AssetType(enum.Enum):
-    STOCK = "stock"
+    EQUITY = "equity"
     OPTION = "option"
+    COMMODITY = "commodity"
     FOREX = "forex"
+    CFD = "cfd"
+    CRYPTO = "crypto"
+    CRYPTO_FUTURE = "crypto_future"
     FUTURE = "future"
+    FUTURE_OPTION = "future_option"
+    INDEX = "index"
+    INDEX_OPTION = "index_option"
     ETF = "etf"
 
 
@@ -255,6 +280,7 @@ class InstrumentBase(SQLModel):
     metric_52_high: float | None = None
     metric_52_low: float | None = None
 
+
 class Instrument(InstrumentBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
@@ -267,32 +293,36 @@ class Instrument(InstrumentBase, table=True):
 class InstrumentCreate(InstrumentBase):
     pass
 
+
 class InstrumentUpdate(InstrumentBase):
     pass
 
+
 class InstrumentPublic(InstrumentBase):
     id: int
+
 
 class InstrumentsPublic(SQLModel):
     data: list[InstrumentPublic]
     count: int
 
 
-
 ##########################################################################
 ## Chart
 ##########################################################################
 class ChartInterval(enum.Enum):
-    Min_5   = "5min"
-    Min_15  = "15min"
-    Min_30  = "30min"
-    Hourly  = "hourly"
-    Daily   = "daily"
+    Min_5 = "5min"
+    Min_15 = "15min"
+    Min_30 = "30min"
+    Hourly = "hourly"
+    Daily = "daily"
     Monthly = "monthly"
+
 
 class ChartBase(SQLModel):
     interval: ChartInterval
     timestamp: datetime
+
 
 class Chart(ChartBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -301,19 +331,22 @@ class Chart(ChartBase, table=True):
 
     bars: list["Bar"] = Relationship(back_populates="chart")
 
+
 class ChartCreate(ChartBase):
     pass
+
 
 class ChartUpdate(ChartBase):
     pass
 
+
 class ChartPublic(ChartBase):
     id: int
+
 
 class ChartsPublic(SQLModel):
     data: list[ChartPublic]
     count: int
-
 
 
 ##########################################################################
@@ -333,7 +366,8 @@ class BarBase(SQLModel):
     totalTicks: float | None
     upTicks: float | None
     upVolume: float | None
-    symbol : str
+    symbol: str
+
 
 class Bar(BarBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -342,6 +376,7 @@ class Bar(BarBase, table=True):
 
     chart_id: int | None = Field(default=None, foreign_key="chart.id", nullable=False)
     chart: Chart | None = Relationship(back_populates="charts")
+
 
 class BarCreate(BarBase):
     pass
@@ -356,6 +391,7 @@ class PortfolioBase(SQLModel):
     equity: float
     profit: float
 
+
 class Portfolio(PortfolioBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
@@ -366,20 +402,21 @@ class Portfolio(PortfolioBase, table=True):
     orders: list["Order"] = Relationship(back_populates="order")
 
 
-
 class PortfolioCreate(PortfolioBase):
     pass
+
 
 class PortfolioUpdate(PortfolioBase):
     pass
 
+
 class PortfolioPublic(PortfolioBase):
     id: int
+
 
 class PortfoliosPublic(SQLModel):
     data: list[PortfolioPublic]
     count: int
-
 
 
 ##########################################################################
@@ -391,13 +428,15 @@ class OrderType(enum.Enum):
     MARKET = "market"
     STOP = "stop"
 
+
 class TimeInForce(enum.Enum):
     DAY = "day"
     GTC = "gtc"
 
+
 class QtyUnits(enum.Enum):
-   SHARES = "shares"
-   USD = "usd"
+    SHARES = "shares"
+    USD = "usd"
 
 
 class OrderBase(SQLModel):
@@ -411,6 +450,7 @@ class OrderBase(SQLModel):
     time_in_force: TimeInForce
     status: str | None
 
+
 class Order(OrderBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
@@ -422,18 +462,22 @@ class Order(OrderBase, table=True):
 
     legs: list["OrderLeg"] = Relationship(back_populates="order")
 
+
 class OrderCreate(OrderBase):
     pass
+
+
 class OrderUpdate(OrderBase):
     pass
+
 
 class OrderPublic(OrderBase):
     id: int
 
+
 class OrdersPublic(SQLModel):
     data: list[OrderPublic]
     count: int
-
 
 
 ##########################################################################
@@ -447,13 +491,16 @@ class OrderLegBase(SQLModel):
     price: float
     status: str
 
+
 class OrderLeg(OrderLegBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     parent_id: int | None = Field(default=None, foreign_key="order.id")
     parent: Order | None = Relationship(back_populates="orders")
 
+
 class OrderLegCreate(OrderBase):
     pass
+
 
 class OrderLegUpdate(OrderBase):
     pass
@@ -464,18 +511,21 @@ class OrderLegUpdate(OrderBase):
 ##########################################################################
 
 class PositionDirection(enum.Enum):
-   LONG = "long"
-   SHORT = "short"
+    LONG = "long"
+    SHORT = "short"
+
+
 class PositionBase(SQLModel):
-    long_short : PositionDirection
+    long_short: PositionDirection
     qty: float
     cost: float | None
     market_value: float | None
 
+
 class Position(PositionBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
-    portfolio_id : int | None = Field(default=None, foreign_key="portfolio.id")
+    portfolio_id: int | None = Field(default=None, foreign_key="portfolio.id")
     portfolio: Portfolio | None = Relationship(back_populates="portfolios")
 
     instrument_id: int | None = Field(default=None, foreign_key="instrument.id")
@@ -483,14 +533,18 @@ class Position(PositionBase, table=True):
 
     orders: list["Order"] = Relationship(back_populates="position")
 
+
 class PositionCreate(OrderBase):
     pass
+
 
 class PositionUpdate(OrderBase):
     pass
 
+
 class PositionPublic(OrderBase):
     id: int
+
 
 class PositionsPublic(SQLModel):
     data: list[PositionPublic]
@@ -506,6 +560,13 @@ class TradeBase(SQLModel):
     qty: float
     entry_price: float
     exit_price: float
+    direction: PositionDirection
+    profit_loss: float | None = None
+    total_fees: float | None = None
+    mea: float | None = None
+    mfe: float | None = None
+    is_win: bool | None = None
+
 
 class Trade(TradeBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -538,18 +599,32 @@ class Trade(TradeBase, table=True):
     position: Position | None = Relationship(back_populates="positions")
 
 
-
-
-
 class TradeCreate(OrderBase):
     pass
+
 
 class TradeUpdate(OrderBase):
     pass
 
+
 class TradePublic(TradeBase):
     id: int
+
 
 class TradesPublic(SQLModel):
     data: list[TradePublic]
     count: int
+
+
+##########################################################################
+## Exchange
+##########################################################################
+
+
+class ExchangeBase(SQLModel):
+    code: str
+    name : str
+    market :str
+
+class Exchange(ExchangeBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)

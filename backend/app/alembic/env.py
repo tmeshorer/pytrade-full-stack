@@ -22,6 +22,7 @@ from app.models import SQLModel  # noqa
 
 target_metadata = SQLModel.metadata
 
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")

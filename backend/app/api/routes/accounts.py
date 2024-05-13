@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.get("/", response_model=AccountsPublic)
 def read_accounts(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
+        session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
     """
     Retrieve accounts.
@@ -45,6 +45,7 @@ def read_account(session: SessionDep, current_user: CurrentUser, id: int) -> Any
     """
     Get account by ID.
     """
+
     account = session.get(Account, id)
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
@@ -55,7 +56,7 @@ def read_account(session: SessionDep, current_user: CurrentUser, id: int) -> Any
 
 @router.post("/", response_model=AccountPublic)
 def create_account(
-    *, session: SessionDep, current_user: CurrentUser, account_in: AccountCreate
+        *, session: SessionDep, current_user: CurrentUser, account_in: AccountCreate
 ) -> Any:
     """
     Create new account.
@@ -69,7 +70,7 @@ def create_account(
 
 @router.put("/{id}", response_model=AccountPublic)
 def update_account(
-    *, session: SessionDep, current_user: CurrentUser, id: int, account_in: AccountUpdate
+        *, session: SessionDep, current_user: CurrentUser, id: int, account_in: AccountUpdate
 ) -> Any:
     """
     Update an account.

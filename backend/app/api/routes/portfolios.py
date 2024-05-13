@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.get("/", response_model=PortfoliosPublic)
 def read_portfolios(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
+        session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
     """
     Retrieve portfolios.
@@ -55,7 +55,7 @@ def read_portfolio(session: SessionDep, current_user: CurrentUser, id: int) -> A
 
 @router.post("/", response_model=PortfolioPublic)
 def create_portfolio(
-    *, session: SessionDep, current_user: CurrentUser, portfolio_in: PortfolioCreate
+        *, session: SessionDep, current_user: CurrentUser, portfolio_in: PortfolioCreate
 ) -> Any:
     """
     Create new portfolio.
@@ -69,7 +69,7 @@ def create_portfolio(
 
 @router.put("/{id}", response_model=PortfolioPublic)
 def update_portfolio(
-    *, session: SessionDep, current_user: CurrentUser, id: int, portfolio_in: PortfolioUpdate
+        *, session: SessionDep, current_user: CurrentUser, id: int, portfolio_in: PortfolioUpdate
 ) -> Any:
     """
     Update an portfolio.

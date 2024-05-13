@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.get("/", response_model=InstrumentsPublic)
 def read_instruments(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
+        session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
     """
     Retrieve instruments.
@@ -55,7 +55,7 @@ def read_instrument(session: SessionDep, current_user: CurrentUser, id: int) -> 
 
 @router.post("/", response_model=InstrumentPublic)
 def create_instrument(
-    *, session: SessionDep, current_user: CurrentUser, instrument_in: InstrumentCreate
+        *, session: SessionDep, current_user: CurrentUser, instrument_in: InstrumentCreate
 ) -> Any:
     """
     Create new instrument.
@@ -69,7 +69,7 @@ def create_instrument(
 
 @router.put("/{id}", response_model=InstrumentPublic)
 def update_instrument(
-    *, session: SessionDep, current_user: CurrentUser, id: int, instrument_in: InstrumentUpdate
+        *, session: SessionDep, current_user: CurrentUser, id: int, instrument_in: InstrumentUpdate
 ) -> Any:
     """
     Update an instrument.

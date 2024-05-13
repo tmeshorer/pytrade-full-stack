@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 from app.core.security import get_password_hash, verify_password
 from app.models import Item, ItemCreate, User, UserCreate, UserUpdate
 
+
 ##########################################################################
 ## User
 ##########################################################################
@@ -58,6 +59,7 @@ def create_item(*, session: Session, item_in: ItemCreate, owner_id: int) -> Item
     session.refresh(db_item)
     return db_item
 
+
 ##########################################################################
 ## Company
 ##########################################################################
@@ -68,6 +70,7 @@ def create_company(*, session: Session, company_in: CompanyCreate, owner_id: int
     session.commit()
     session.refresh(db_item)
     return db_item
+
 
 def select_companies():
     with Session(engine) as session:
@@ -87,6 +90,7 @@ def create_bar(*, session: Session, bar_in: BarCreate) -> Item:
     session.refresh(db_item)
     return db_item
 
+
 def select_bars():
     with Session(engine) as session:
         statement = select(Bar)
@@ -104,6 +108,7 @@ def create_chart(*, session: Session, chart_in: ChartCreate) -> Item:
     session.commit()
     session.refresh(db_item)
     return db_item
+
 
 def select_charts():
     with Session(engine) as session:
@@ -123,6 +128,7 @@ def create_financial_statement(*, session: Session, chart_in: FinancialStatement
     session.refresh(db_item)
     return db_item
 
+
 def select_financial_statements():
     with Session(engine) as session:
         statement = select(FinancialStatement)
@@ -140,6 +146,7 @@ def create_instrument(*, session: Session, instrument_in: InstrumentCreate) -> I
     session.commit()
     session.refresh(db_item)
     return db_item
+
 
 def select_instruments():
     with Session(engine) as session:
@@ -159,6 +166,7 @@ def create_order(*, session: Session, order_in: OrderCreate) -> Item:
     session.refresh(db_item)
     return db_item
 
+
 def select_orders():
     with Session(engine) as session:
         statement = select(Order)
@@ -176,6 +184,8 @@ def create_order_leg(*, session: Session, order_leg_in: OrderLegCreate) -> Item:
     session.commit()
     session.refresh(db_item)
     return db_item
+
+
 def select_order_legs():
     with Session(engine) as session:
         statement = select(OrderLeg)
@@ -194,11 +204,13 @@ def create_portfolio(*, session: Session, portfolio_in: PortfilioCreate) -> Item
     session.refresh(db_item)
     return db_item
 
+
 def select_portfilios():
     with Session(engine) as session:
         statement = select(Portfolio)
         results = session.exec(statement)
         return results
+
 
 ##########################################################################
 ## Position
@@ -210,6 +222,7 @@ def create_position(*, session: Session, position_in: PositionCreate) -> Item:
     session.commit()
     session.refresh(db_item)
     return db_item
+
 
 def select_positions():
     with Session(engine) as session:

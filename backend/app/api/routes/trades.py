@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.get("/", response_model=TradesPublic)
 def read_trades(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
+        session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
     """
     Retrieve trades.
@@ -55,7 +55,7 @@ def read_trade(session: SessionDep, current_user: CurrentUser, id: int) -> Any:
 
 @router.post("/", response_model=TradePublic)
 def create_trade(
-    *, session: SessionDep, current_user: CurrentUser, trade_in: TradeCreate
+        *, session: SessionDep, current_user: CurrentUser, trade_in: TradeCreate
 ) -> Any:
     """
     Create new trade.
@@ -69,7 +69,7 @@ def create_trade(
 
 @router.put("/{id}", response_model=TradePublic)
 def update_trade(
-    *, session: SessionDep, current_user: CurrentUser, id: int, trade_in: TradeUpdate
+        *, session: SessionDep, current_user: CurrentUser, id: int, trade_in: TradeUpdate
 ) -> Any:
     """
     Update an trade.
